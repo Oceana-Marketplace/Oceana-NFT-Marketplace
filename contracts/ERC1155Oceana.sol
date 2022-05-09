@@ -27,7 +27,13 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
         private _operatorApprovals;
 
     // Used as the URI for all token types by relying on ID substitution, e.g. https://token-cdn-domain/{id}.json
-    mapping(uint256 => string) private _uri;
+    // Used as a custom URI for severl token types
+    // Mapping from favID => tokenID to custom URI
+    mapping(uint256 => mapping(uint256 => string)) _uri;
+
+
+    
+    //mapping(uint256 => string) private _uri;
 
     /**
      * @dev
@@ -52,21 +58,30 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
     /**
      * @dev See {IERC1155Oceanan-uri}.
      *
-     * This implementation returns the same URI for *all* token types. It relies
-     * on the token type ID substitution mechanism
-     * https://eips.ethereum.org/EIPS/eip-1155#metadata[defined in the EIP].
+     * @dev Returns the URI for token type `id`.
      *
-     * Clients calling this function must replace the `\{id\}` substring with the
-     * actual token type ID.
+     * If the `\{id\}` substring is present in the URI, it must be replaced by
+     * clients with the actual token type ID.
      */
-    function uri(uint256 favId)
+    function uri(uint256 favId, uint256 tokenId)
         public
         view
-        virtual
         override
+        virtual
         returns (string memory)
     {
-        return _uri[favId];
+        return _uri[favId][tokenId];
+    }
+
+    /**
+     * @dev See {IERC1155Oceanan-uri}.
+     *
+     * @dev sets the URI for token type `id` of specific FAV.
+     *
+     */
+
+    function _setURI(uint256 favId, uint256 tokenId, string memory newUri) internal virtual{
+        _uri[favId][tokenId] = newUri;
     }
 
     /**
@@ -275,28 +290,6 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
         );
     }
 
-    /**
-     * @dev Sets a new URI for all token types, by relying on the token type ID
-     * substitution mechanism
-     * https://eips.ethereum.org/EIPS/eip-1155#metadata[defined in the EIP].
-     *
-     * By this mechanism, any occurrence of the `\{id\}` substring in either the
-     * URI or any of the amounts in the JSON file at said URI will be replaced by
-     * clients with the token type ID.
-     *
-     * For example, the `https://token-cdn-domain/\{id\}.json` URI would be
-     * interpreted by clients as
-     * `https://token-cdn-domain/000000000000000000000000000000000000000000000000000000000004cce0.json`
-     * for token type ID 0x4cce0.
-     *
-     * See {uri}.
-     *
-     * Because these URIs cannot be meaningfully represented by the {URI} event,
-     * this function emits no events.
-     */
-    function _setURI(uint256 favId, string memory newuri) internal virtual {
-        _uri[favId] = newuri;
-    }
 
     /**
      * @dev Creates `amount` tokens of token type `id`, and assigns them to `to`.

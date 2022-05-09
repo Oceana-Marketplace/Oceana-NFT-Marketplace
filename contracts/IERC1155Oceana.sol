@@ -13,7 +13,7 @@ import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
  */
 interface IERC1155Oceana is IERC165 {
     /**
-     * @dev Emitted when `value` tokens of token type `id` are transferred from `from` to `to` by `operator`.
+     * @dev Emitted when `value` tokens of token type `id` of fav `favId` are transferred from `from` to `to` by `operator`.
      */
     event TransferSingle(
         address indexed operator,
@@ -25,7 +25,7 @@ interface IERC1155Oceana is IERC165 {
     );
 
     /**
-     * @dev Equivalent to multiple {TransferSingle} events, where `operator`, `from` and `to` are the same for all
+     * @dev Equivalent to multiple {TransferSingle} events, where `operator`, `from` and `to`, `favId` are the same for all
      * transfers.
      */
     event TransferBatch(
@@ -58,7 +58,7 @@ interface IERC1155Oceana is IERC165 {
     event URI(uint256 indexed favId, string value, uint256 indexed id);
 
     /**
-     * @dev Returns the amount of tokens of token type `id` owned by `account`.
+     * @dev Returns the amount of tokens of token type `id` at `favID` marketplace owned by `account` .
      *
      * Requirements:
      *
@@ -157,5 +157,5 @@ interface IERC1155Oceana is IERC165 {
      * If the `\{id\}` substring is present in the URI, it must be replaced by
      * clients with the actual token type ID.
      */
-    function uri(uint256 favId) external view returns (string memory);
+    function uri(uint256 favId, uint256 tokenId) external view returns (string memory);
 }
