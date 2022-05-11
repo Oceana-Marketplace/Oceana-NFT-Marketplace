@@ -39,7 +39,3 @@ contract FavNFT is ERC1155Oceana, Ownable{
         fav2tokenId[favId]++;
     }
 }
-
-//get, set data URL functions
-//event
-//

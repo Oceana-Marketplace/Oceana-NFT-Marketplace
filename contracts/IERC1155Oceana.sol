@@ -55,7 +55,7 @@ interface IERC1155Oceana is IERC165 {
      * https://eips.ethereum.org/EIPS/eip-1155#metadata-extensions[guarantees] that `value` will equal the value
      * returned by {IERC1155MetadataURI-uri}.
      */
-    event URI(uint256 indexed favId, string value, uint256 indexed id);
+    event URI(uint256 indexed favId, uint256 indexed id, string value);
 
     /**
      * @dev Returns the amount of tokens of token type `id` at `favID` marketplace owned by `account` .

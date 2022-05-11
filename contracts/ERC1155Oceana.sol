@@ -82,6 +82,7 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
 
     function _setURI(uint256 favId, uint256 tokenId, string memory newUri) internal virtual{
         _uri[favId][tokenId] = newUri;
+        emit URI(favId, tokenId, newUri);
     }
 
     /**
