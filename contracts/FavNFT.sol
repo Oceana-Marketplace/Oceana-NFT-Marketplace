@@ -13,6 +13,7 @@ contract FavNFT is ERC1155Oceana, Ownable {
     mapping(uint256 => mapping(uint256 => address)) creators;
 
     event CreateFav(uint256 favId, string dataUrl);
+    event SetFavDataUrl(uint256 favId, string dataUrl);
 
     modifier onlyCreator(uint256 favId, uint256 tokenId) {
         require(
@@ -43,6 +44,7 @@ contract FavNFT is ERC1155Oceana, Ownable {
         onlyOwner
     {
         fav2dataUrl[favId] = newDataUrl;
+        emit SetFavDataUrl(favId, newDataUrl);
     }
 
     function createNft(
