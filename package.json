@@ -1,3 +1,35 @@
 {
-  "name": "hardhat-project"
+  "name": "oceana-nft-contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-etherscan": "^2.1.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@nomiclabs/hardhat-web3": "^2.0.0",
+    "@openzeppelin/test-helpers": "^0.5.15",
+    "chai": "^4.3.4",
+    "ethereum-waffle": "^3.3.0",
+    "ethers": "^5.0.32",
+    "hardhat": "^2.3.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.6.0",
+    "@truffle/hdwallet-provider": "^1.5.0",
+    "axios": "^0.21.4",
+    "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0",
+    "dotenv": "^9.0.2",
+    "hardhat-abi-exporter": "^2.8.0",
+    "hardhat-deploy": "^0.7.10",
+    "node-fetch": "^2.6.7",
+    "sol-merger": "^3.1.0",
+    "web3": "^1.5.3"
+  }
 }
