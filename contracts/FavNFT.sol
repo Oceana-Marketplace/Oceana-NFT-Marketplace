@@ -8,12 +8,12 @@ contract FavNFT is ERC1155Oceana, Ownable {
     using Address for address;
     uint256 favNumber;
 
-    mapping(uint256 => uint256) fav2tokenId;
-    mapping(uint256 => string) fav2dataUrl;
-    mapping(uint256 => mapping(uint256 => address)) creators;
+    mapping(uint256 => uint256) public fav2tokenId;
+    mapping(uint256 => string) public fav2dataURI;
+    mapping(uint256 => mapping(uint256 => address)) public creators;
 
-    event CreateFav(uint256 favId, string dataUrl);
-    event SetFavDataUrl(uint256 favId, string dataUrl);
+    event CreateFav(uint256 favId, string dataURI);
+    event SetFavDataURI(uint256 favId, string dataURI);
 
     modifier onlyCreator(uint256 favId, uint256 tokenId) {
         require(
@@ -26,25 +26,18 @@ contract FavNFT is ERC1155Oceana, Ownable {
     constructor() {}
 
     function createFav(string memory dataUrl) external onlyOwner {
-        fav2dataUrl[favNumber] = dataUrl;
+        fav2dataURI[favNumber] = dataUrl;
         emit CreateFav(favNumber, dataUrl);
         favNumber++;
     }
 
-    function getFavDataUrl(uint256 favId)
-        external
-        view
-        returns (string memory)
-    {
-        return fav2dataUrl[favId];
-    }
-
-    function setFavDataUrl(uint256 favId, string memory newDataUrl)
+    function setFavDataURI(uint256 favId, string memory newDataURI)
         external
         onlyOwner
     {
-        fav2dataUrl[favId] = newDataUrl;
-        emit SetFavDataUrl(favId, newDataUrl);
+        require(favId < favNumber, "Fav doesn't exist");
+        fav2dataURI[favId] = newDataURI;
+        emit SetFavDataURI(favId, newDataURI);
     }
 
     function createNft(
@@ -54,7 +47,8 @@ contract FavNFT is ERC1155Oceana, Ownable {
         string memory uri,
         bytes memory data
     ) external {
-        require(favId < favNumber && amount >= 1);
+        require(favId < favNumber, "Fav doesn't exist");
+        require(amount >= 1, "amount is zero");
         uint256 tokenId = fav2tokenId[favId];
         _mint(to, favId, tokenId, amount, data);
         _setURI(favId, tokenId, uri);
@@ -62,11 +56,12 @@ contract FavNFT is ERC1155Oceana, Ownable {
         creators[favId][tokenId] = msg.sender;
     }
 
-    function setTokenUri(
+    function setTokenURI(
         uint256 favId,
         uint256 tokenId,
         string memory uri
     ) external onlyCreator(favId, tokenId) {
+        require(favId < favNumber, "Fav doesn't exist");
         _setURI(favId, tokenId, uri);
     }
 }

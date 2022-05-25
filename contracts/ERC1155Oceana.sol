@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./IERC1155Oceana.sol";
+import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -31,8 +32,6 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
     // Mapping from favID => tokenID to custom URI
     mapping(uint256 => mapping(uint256 => string)) _uri;
 
-
-    
     //mapping(uint256 => string) private _uri;
 
     /**
@@ -66,8 +65,8 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
     function uri(uint256 favId, uint256 tokenId)
         public
         view
-        override
         virtual
+        override
         returns (string memory)
     {
         return _uri[favId][tokenId];
@@ -80,7 +79,11 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
      *
      */
 
-    function _setURI(uint256 favId, uint256 tokenId, string memory newUri) internal virtual{
+    function _setURI(
+        uint256 favId,
+        uint256 tokenId,
+        string memory newUri
+    ) internal virtual {
         _uri[favId][tokenId] = newUri;
         emit URI(favId, tokenId, newUri);
     }
@@ -167,6 +170,7 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
             from == _msgSender() || isApprovedForAll(favId, from, _msgSender()),
             "ERC1155: caller is not owner nor approved"
         );
+        console.log("hey");
         _safeTransferFrom(from, to, favId, id, amount, data);
     }
 
@@ -290,7 +294,6 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
             data
         );
     }
-
 
     /**
      * @dev Creates `amount` tokens of token type `id`, and assigns them to `to`.
