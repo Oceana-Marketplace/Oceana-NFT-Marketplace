@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import "./IERC165Oceana.sol";
 
 /**
  * @dev Required interface of an ERC1155 compliant contract, as defined in the
@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
  *
  * _Available since v3.1._
  */
-interface IERC1155Oceana is IERC165 {
+interface IERC1155Oceana is IERC165Oceana {
     /**
      * @dev Emitted when `value` tokens of token type `id` of fav `favId` are transferred from `from` to `to` by `operator`.
      */
@@ -19,7 +19,6 @@ interface IERC1155Oceana is IERC165 {
         address indexed operator,
         address indexed from,
         address indexed to,
-        uint256 favId,
         uint256 id,
         uint256 value
     );
@@ -32,7 +31,6 @@ interface IERC1155Oceana is IERC165 {
         address indexed operator,
         address indexed from,
         address indexed to,
-        uint256 favId,
         uint256[] ids,
         uint256[] values
     );
@@ -42,7 +40,6 @@ interface IERC1155Oceana is IERC165 {
      * `approved`.
      */
     event ApprovalForAll(
-        uint256 favId,
         address indexed account,
         address indexed operator,
         bool approved
@@ -55,7 +52,7 @@ interface IERC1155Oceana is IERC165 {
      * https://eips.ethereum.org/EIPS/eip-1155#metadata-extensions[guarantees] that `value` will equal the value
      * returned by {IERC1155MetadataURI-uri}.
      */
-    event URI(uint256 indexed favId, uint256 indexed id, string value);
+    event URI(uint256 indexed id, string value);
 
     /**
      * @dev Returns the amount of tokens of token type `id` at `favID` marketplace owned by `account` .
@@ -64,11 +61,10 @@ interface IERC1155Oceana is IERC165 {
      *
      * - `account` cannot be the zero address.
      */
-    function balanceOf(
-        uint256 favId,
-        address account,
-        uint256 id
-    ) external view returns (uint256);
+    function balanceOf(address account, uint256 id)
+        external
+        view
+        returns (uint256);
 
     /**
      * @dev xref:ROOT:erc1155.adoc#batch-operations[Batched] version of {balanceOf}.
@@ -77,11 +73,10 @@ interface IERC1155Oceana is IERC165 {
      *
      * - `accounts` and `ids` must have the same length.
      */
-    function balanceOfBatch(
-        uint256 favId,
-        address[] calldata accounts,
-        uint256[] calldata ids
-    ) external view returns (uint256[] memory);
+    function balanceOfBatch(address[] calldata accounts, uint256[] calldata ids)
+        external
+        view
+        returns (uint256[] memory);
 
     /**
      * @dev Grants or revokes permission to `operator` to transfer the caller's tokens, according to `approved`,
@@ -92,22 +87,17 @@ interface IERC1155Oceana is IERC165 {
      *
      * - `operator` cannot be the caller.
      */
-    function setApprovalForAll(
-        uint256 favId,
-        address operator,
-        bool approved
-    ) external;
+    function setApprovalForAll(address operator, bool approved) external;
 
     /**
      * @dev Returns true if `operator` is approved to transfer ``account``'s tokens.
      *
      * See {setApprovalForAll}.
      */
-    function isApprovedForAll(
-        uint256 favId,
-        address account,
-        address operator
-    ) external view returns (bool);
+    function isApprovedForAll(address account, address operator)
+        external
+        view
+        returns (bool);
 
     /**
      * @dev Transfers `amount` tokens of token type `id` from `from` to `to`.
@@ -125,7 +115,6 @@ interface IERC1155Oceana is IERC165 {
     function safeTransferFrom(
         address from,
         address to,
-        uint256 favId,
         uint256 id,
         uint256 amount,
         bytes calldata data
@@ -145,17 +134,8 @@ interface IERC1155Oceana is IERC165 {
     function safeBatchTransferFrom(
         address from,
         address to,
-        uint256 favId,
         uint256[] calldata ids,
         uint256[] calldata amounts,
         bytes calldata data
     ) external;
-
-    /**
-     * @dev Returns the URI for token type `id`.
-     *
-     * If the `\{id\}` substring is present in the URI, it must be replaced by
-     * clients with the actual token type ID.
-     */
-    function uri(uint256 favId, uint256 tokenId) external view returns (string memory);
 }
