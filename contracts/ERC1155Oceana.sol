@@ -4,10 +4,12 @@ pragma solidity ^0.8.0;
 import "./IERC1155Oceana.sol";
 import "hardhat/console.sol";
 
-import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
+import "./IERC1155ReceiverOceana.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "./ERC165Oceana.sol";
+import "./extensions/IERC1155MetadataURIOceana.sol";
+import "./IERC1155Oceana.sol";
 
 /**
  * @dev Implementation of the basic standard multi-token.
@@ -16,28 +18,29 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
  *
  * _Available since v3.1._
  */
-abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
+contract ERC1155Oceana is
+    Context,
+    ERC165Oceana,
+    IERC1155Oceana,
+    IERC1155MetadataURIOceana
+{
     using Address for address;
 
-    // Mapping from favId => token ID to account balances
-    mapping(uint256 => mapping(uint256 => mapping(address => uint256)))
-        private _balances;
+    // Mapping from token ID to account balances
+    mapping(uint256 => mapping(address => uint256)) private _balances;
 
     // Mapping from favId => account to operator approvals
-    mapping(uint256 => mapping(address => mapping(address => bool)))
-        private _operatorApprovals;
+    mapping(address => mapping(address => bool)) private _operatorApprovals;
 
     // Used as the URI for all token types by relying on ID substitution, e.g. https://token-cdn-domain/{id}.json
-    // Used as a custom URI for severl token types
-    // Mapping from favID => tokenID to custom URI
-    mapping(uint256 => mapping(uint256 => string)) _uri;
-
-    //mapping(uint256 => string) private _uri;
+    string private _uri;
 
     /**
-     * @dev
+     * @dev See {_setURI}.
      */
-    constructor() {}
+    constructor(string memory uri_) {
+        _setURI(uri_);
+    }
 
     /**
      * @dev See {IERC165-supportsInterface}.
@@ -46,7 +49,7 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
         public
         view
         virtual
-        override(ERC165, IERC165)
+        override(ERC165Oceana, IERC165Oceana)
         returns (bool)
     {
         return
@@ -55,37 +58,40 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
     }
 
     /**
-     * @dev See {IERC1155Oceanan-uri}.
+     * @dev See {IERC1155Oceana}.
      *
-     * @dev Returns the URI for token type `id`.
+     * This implementation returns the same URI for *all* token types. It relies
+     * on the token type ID substitution mechanism
+     * https://eips.ethereum.org/EIPS/eip-1155#metadata[defined in the EIP].
      *
-     * If the `\{id\}` substring is present in the URI, it must be replaced by
-     * clients with the actual token type ID.
+     * Clients calling this function must replace the `\{id\}` substring with the
+     * actual token type ID.
      */
-    function uri(uint256 favId, uint256 tokenId)
-        public
-        view
-        virtual
-        override
-        returns (string memory)
-    {
-        return _uri[favId][tokenId];
+    function uri(uint256) public view virtual override returns (string memory) {
+        return _uri;
     }
 
     /**
-     * @dev See {IERC1155Oceanan-uri}.
+     * @dev Sets a new URI for all token types, by relying on the token type ID
+     * substitution mechanism
+     * https://eips.ethereum.org/EIPS/eip-1155#metadata[defined in the EIP].
      *
-     * @dev sets the URI for token type `id` of specific FAV.
+     * By this mechanism, any occurrence of the `\{id\}` substring in either the
+     * URI or any of the amounts in the JSON file at said URI will be replaced by
+     * clients with the token type ID.
      *
+     * For example, the `https://token-cdn-domain/\{id\}.json` URI would be
+     * interpreted by clients as
+     * `https://token-cdn-domain/000000000000000000000000000000000000000000000000000000000004cce0.json`
+     * for token type ID 0x4cce0.
+     *
+     * See {uri}.
+     *
+     * Because these URIs cannot be meaningfully represented by the {URI} event,
+     * this function emits no events.
      */
-
-    function _setURI(
-        uint256 favId,
-        uint256 tokenId,
-        string memory newUri
-    ) internal virtual {
-        _uri[favId][tokenId] = newUri;
-        emit URI(favId, tokenId, newUri);
+    function _setURI(string memory newuri) internal virtual {
+        _uri = newuri;
     }
 
     /**
@@ -95,16 +101,18 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
      *
      * - `account` cannot be the zero address.
      */
-    function balanceOf(
-        uint256 favId,
-        address account,
-        uint256 id
-    ) public view virtual override returns (uint256) {
+    function balanceOf(address account, uint256 id)
+        public
+        view
+        virtual
+        override
+        returns (uint256)
+    {
         require(
             account != address(0),
             "ERC1155: balance query for the zero address"
         );
-        return _balances[favId][id][account];
+        return _balances[id][account];
     }
 
     /**
@@ -114,11 +122,13 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
      *
      * - `accounts` and `ids` must have the same length.
      */
-    function balanceOfBatch(
-        uint256 favId,
-        address[] memory accounts,
-        uint256[] memory ids
-    ) public view virtual override returns (uint256[] memory) {
+    function balanceOfBatch(address[] memory accounts, uint256[] memory ids)
+        public
+        view
+        virtual
+        override
+        returns (uint256[] memory)
+    {
         require(
             accounts.length == ids.length,
             "ERC1155: accounts and ids length mismatch"
@@ -127,7 +137,7 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
         uint256[] memory batchBalances = new uint256[](accounts.length);
 
         for (uint256 i = 0; i < accounts.length; ++i) {
-            batchBalances[i] = balanceOf(favId, accounts[i], ids[i]);
+            batchBalances[i] = balanceOf(accounts[i], ids[i]);
         }
 
         return batchBalances;
@@ -136,23 +146,25 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
     /**
      * @dev See {IERC1155Oceana-setApprovalForAll}.
      */
-    function setApprovalForAll(
-        uint256 favId,
-        address operator,
-        bool approved
-    ) public virtual override {
-        _setApprovalForAll(favId, _msgSender(), operator, approved);
+    function setApprovalForAll(address operator, bool approved)
+        public
+        virtual
+        override
+    {
+        _setApprovalForAll(_msgSender(), operator, approved);
     }
 
     /**
      * @dev See {IERC1155Oceana-isApprovedForAll}.
      */
-    function isApprovedForAll(
-        uint256 favId,
-        address account,
-        address operator
-    ) public view virtual override returns (bool) {
-        return _operatorApprovals[favId][account][operator];
+    function isApprovedForAll(address account, address operator)
+        public
+        view
+        virtual
+        override
+        returns (bool)
+    {
+        return _operatorApprovals[account][operator];
     }
 
     /**
@@ -161,17 +173,15 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
     function safeTransferFrom(
         address from,
         address to,
-        uint256 favId,
         uint256 id,
         uint256 amount,
         bytes memory data
     ) public virtual override {
         require(
-            from == _msgSender() || isApprovedForAll(favId, from, _msgSender()),
+            from == _msgSender() || isApprovedForAll(from, _msgSender()),
             "ERC1155: caller is not owner nor approved"
         );
-        console.log("hey");
-        _safeTransferFrom(from, to, favId, id, amount, data);
+        _safeTransferFrom(from, to, id, amount, data);
     }
 
     /**
@@ -180,17 +190,16 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
     function safeBatchTransferFrom(
         address from,
         address to,
-        uint256 favId,
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
     ) public virtual override {
         require(
-            from == _msgSender() || isApprovedForAll(favId, from, _msgSender()),
+            from == _msgSender() || isApprovedForAll(from, _msgSender()),
             "ERC1155: transfer caller is not owner"
         );
 
-        _safeBatchTransferFrom(from, to, favId, ids, amounts, data);
+        _safeBatchTransferFrom(from, to, ids, amounts, data);
     }
 
     /**
@@ -208,7 +217,6 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
     function _safeTransferFrom(
         address from,
         address to,
-        uint256 favId,
         uint256 id,
         uint256 amount,
         bytes memory data
@@ -219,21 +227,21 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
         uint256[] memory ids = _asSingletonArray(id);
         uint256[] memory amounts = _asSingletonArray(amount);
 
-        _beforeTokenTransfer(operator, from, to, favId, ids, amounts, data);
+        _beforeTokenTransfer(operator, from, to, ids, amounts, data);
 
-        uint256 fromBalance = _balances[favId][id][from];
+        uint256 fromBalance = _balances[id][from];
         require(
             fromBalance >= amount,
             "ERC1155: insufficient balance for transfer"
         );
         unchecked {
-            _balances[favId][id][from] = fromBalance - amount;
+            _balances[id][from] = fromBalance - amount;
         }
-        _balances[favId][id][to] += amount;
+        _balances[id][to] += amount;
 
-        emit TransferSingle(operator, from, to, favId, id, amount);
+        emit TransferSingle(operator, from, to, id, amount);
 
-        _afterTokenTransfer(operator, from, to, favId, ids, amounts, data);
+        _afterTokenTransfer(operator, from, to, ids, amounts, data);
 
         _doSafeTransferAcceptanceCheck(operator, from, to, id, amount, data);
     }
@@ -251,7 +259,6 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
     function _safeBatchTransferFrom(
         address from,
         address to,
-        uint256 favId,
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
@@ -264,26 +271,26 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
 
         address operator = _msgSender();
 
-        _beforeTokenTransfer(operator, from, to, favId, ids, amounts, data);
+        _beforeTokenTransfer(operator, from, to, ids, amounts, data);
 
         for (uint256 i = 0; i < ids.length; ++i) {
             uint256 id = ids[i];
             uint256 amount = amounts[i];
 
-            uint256 fromBalance = _balances[favId][id][from];
+            uint256 fromBalance = _balances[id][from];
             require(
                 fromBalance >= amount,
                 "ERC1155: insufficient balance for transfer"
             );
             unchecked {
-                _balances[favId][id][from] = fromBalance - amount;
+                _balances[id][from] = fromBalance - amount;
             }
-            _balances[favId][id][to] += amount;
+            _balances[id][to] += amount;
         }
 
-        emit TransferBatch(operator, from, to, favId, ids, amounts);
+        emit TransferBatch(operator, from, to, ids, amounts);
 
-        _afterTokenTransfer(operator, from, to, favId, ids, amounts, data);
+        _afterTokenTransfer(operator, from, to, ids, amounts, data);
 
         _doSafeBatchTransferAcceptanceCheck(
             operator,
@@ -308,7 +315,6 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
      */
     function _mint(
         address to,
-        uint256 favId,
         uint256 id,
         uint256 amount,
         bytes memory data
@@ -319,28 +325,12 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
         uint256[] memory ids = _asSingletonArray(id);
         uint256[] memory amounts = _asSingletonArray(amount);
 
-        _beforeTokenTransfer(
-            operator,
-            address(0),
-            to,
-            favId,
-            ids,
-            amounts,
-            data
-        );
+        _beforeTokenTransfer(operator, address(0), to, ids, amounts, data);
 
-        _balances[favId][id][to] += amount;
-        emit TransferSingle(operator, address(0), to, favId, id, amount);
+        _balances[id][to] += amount;
+        emit TransferSingle(operator, address(0), to, id, amount);
 
-        _afterTokenTransfer(
-            operator,
-            address(0),
-            to,
-            favId,
-            ids,
-            amounts,
-            data
-        );
+        _afterTokenTransfer(operator, address(0), to, ids, amounts, data);
 
         _doSafeTransferAcceptanceCheck(
             operator,
@@ -363,7 +353,6 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
      */
     function _mintBatch(
         address to,
-        uint256 favId,
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
@@ -376,31 +365,15 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
 
         address operator = _msgSender();
 
-        _beforeTokenTransfer(
-            operator,
-            address(0),
-            to,
-            favId,
-            ids,
-            amounts,
-            data
-        );
+        _beforeTokenTransfer(operator, address(0), to, ids, amounts, data);
 
         for (uint256 i = 0; i < ids.length; i++) {
-            _balances[favId][ids[i]][to] += amounts[i];
+            _balances[ids[i]][to] += amounts[i];
         }
 
-        emit TransferBatch(operator, address(0), to, favId, ids, amounts);
+        emit TransferBatch(operator, address(0), to, ids, amounts);
 
-        _afterTokenTransfer(
-            operator,
-            address(0),
-            to,
-            favId,
-            ids,
-            amounts,
-            data
-        );
+        _afterTokenTransfer(operator, address(0), to, ids, amounts, data);
 
         _doSafeBatchTransferAcceptanceCheck(
             operator,
@@ -422,7 +395,6 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
      */
     function _burn(
         address from,
-        uint256 favId,
         uint256 id,
         uint256 amount
     ) internal virtual {
@@ -432,33 +404,17 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
         uint256[] memory ids = _asSingletonArray(id);
         uint256[] memory amounts = _asSingletonArray(amount);
 
-        _beforeTokenTransfer(
-            operator,
-            from,
-            address(0),
-            favId,
-            ids,
-            amounts,
-            ""
-        );
+        _beforeTokenTransfer(operator, from, address(0), ids, amounts, "");
 
-        uint256 fromBalance = _balances[favId][id][from];
+        uint256 fromBalance = _balances[id][from];
         require(fromBalance >= amount, "ERC1155: burn amount exceeds balance");
         unchecked {
-            _balances[favId][id][from] = fromBalance - amount;
+            _balances[id][from] = fromBalance - amount;
         }
 
-        emit TransferSingle(operator, from, address(0), favId, id, amount);
+        emit TransferSingle(operator, from, address(0), id, amount);
 
-        _afterTokenTransfer(
-            operator,
-            from,
-            address(0),
-            favId,
-            ids,
-            amounts,
-            ""
-        );
+        _afterTokenTransfer(operator, from, address(0), ids, amounts, "");
     }
 
     /**
@@ -470,7 +426,6 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
      */
     function _burnBatch(
         address from,
-        uint256 favId,
         uint256[] memory ids,
         uint256[] memory amounts
     ) internal virtual {
@@ -482,41 +437,25 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
 
         address operator = _msgSender();
 
-        _beforeTokenTransfer(
-            operator,
-            from,
-            address(0),
-            favId,
-            ids,
-            amounts,
-            ""
-        );
+        _beforeTokenTransfer(operator, from, address(0), ids, amounts, "");
 
         for (uint256 i = 0; i < ids.length; i++) {
             uint256 id = ids[i];
             uint256 amount = amounts[i];
 
-            uint256 fromBalance = _balances[favId][id][from];
+            uint256 fromBalance = _balances[id][from];
             require(
                 fromBalance >= amount,
                 "ERC1155: burn amount exceeds balance"
             );
             unchecked {
-                _balances[favId][id][from] = fromBalance - amount;
+                _balances[id][from] = fromBalance - amount;
             }
         }
 
-        emit TransferBatch(operator, from, address(0), favId, ids, amounts);
+        emit TransferBatch(operator, from, address(0), ids, amounts);
 
-        _afterTokenTransfer(
-            operator,
-            from,
-            address(0),
-            favId,
-            ids,
-            amounts,
-            ""
-        );
+        _afterTokenTransfer(operator, from, address(0), ids, amounts, "");
     }
 
     /**
@@ -525,14 +464,13 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
      * Emits a {ApprovalForAll} event.
      */
     function _setApprovalForAll(
-        uint256 favId,
         address owner,
         address operator,
         bool approved
     ) internal virtual {
         require(owner != operator, "ERC1155: setting approval status for self");
-        _operatorApprovals[favId][owner][operator] = approved;
-        emit ApprovalForAll(favId, owner, operator, approved);
+        _operatorApprovals[owner][operator] = approved;
+        emit ApprovalForAll(owner, operator, approved);
     }
 
     /**
@@ -559,7 +497,6 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
         address operator,
         address from,
         address to,
-        uint256 favId,
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
@@ -589,7 +526,6 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
         address operator,
         address from,
         address to,
-        uint256 favId,
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
@@ -605,7 +541,7 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
     ) private {
         if (to.isContract()) {
             try
-                IERC1155Receiver(to).onERC1155Received(
+                IERC1155ReceiverOceana(to).onERC1155Received(
                     operator,
                     from,
                     id,
@@ -613,7 +549,10 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
                     data
                 )
             returns (bytes4 response) {
-                if (response != IERC1155Receiver.onERC1155Received.selector) {
+                if (
+                    response !=
+                    IERC1155ReceiverOceana.onERC1155Received.selector
+                ) {
                     revert("ERC1155: ERC1155Receiver rejected tokens");
                 }
             } catch Error(string memory reason) {
@@ -634,7 +573,7 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
     ) private {
         if (to.isContract()) {
             try
-                IERC1155Receiver(to).onERC1155BatchReceived(
+                IERC1155ReceiverOceana(to).onERC1155BatchReceived(
                     operator,
                     from,
                     ids,
@@ -643,7 +582,8 @@ abstract contract ERC1155Oceana is Context, ERC165, IERC1155Oceana {
                 )
             returns (bytes4 response) {
                 if (
-                    response != IERC1155Receiver.onERC1155BatchReceived.selector
+                    response !=
+                    IERC1155ReceiverOceana.onERC1155BatchReceived.selector
                 ) {
                     revert("ERC1155: ERC1155Receiver rejected tokens");
                 }
