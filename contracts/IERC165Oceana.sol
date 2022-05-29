@@ -21,5 +21,8 @@ interface IERC165Oceana {
      *
      * This function call must use less than 30 000 gas.
      */
-    function supportsInterface(bytes4 interfaceId) external view returns (bool);
+    function supportsInterfaceOceana(bytes4 interfaceId)
+        external
+        view
+        returns (bool);
 }

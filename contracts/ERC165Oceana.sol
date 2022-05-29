@@ -23,7 +23,7 @@ abstract contract ERC165Oceana is IERC165Oceana {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId)
+    function supportsInterfaceOceana(bytes4 interfaceId)
         public
         view
         virtual
