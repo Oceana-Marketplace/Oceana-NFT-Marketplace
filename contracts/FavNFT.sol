@@ -24,11 +24,10 @@ contract FavNFT is ERC1155Oceana, Ownable {
 
     // Used as the URI for all favourites by relying on ID substitution
     string private _favURI;
+    string private _collectionURI;
 
     // Mapping from tokenID to creator
     mapping(uint256 => address) private creators;
-
-    event SetFavDataURI(uint256 favId, string dataURI);
 
     modifier onlyCreator(uint256 tokenId) {
         require(msg.sender == creators[tokenId], "only creator can set uri");
@@ -43,8 +42,17 @@ contract FavNFT is ERC1155Oceana, Ownable {
         collectionNumber++;
     }
 
+    function createCollection(uint256 favId) external {
+        _favourite[collectionNumber] = favId;
+        collectionNumber++;
+    }
+
     function setFavouriteURI(string memory newURI) external onlyOwner {
         _favURI = newURI;
+    }
+
+    function setCollectionURI(string memory newURI) external onlyOwner {
+        _collectionURI = newURI;
     }
 
     function createNft(
@@ -55,7 +63,7 @@ contract FavNFT is ERC1155Oceana, Ownable {
     ) external {
         require(collectionId < collectionNumber, "Collection ID doesn't exist");
         require(amount >= 1, "Can not mint zero amount");
-        _mint(to, tokenNumber, amount, data);
+        _mintOceana(to, tokenNumber, amount, data);
         _collection[tokenNumber] = collectionId;
         creators[tokenNumber] = msg.sender;
         tokenNumber++;

@@ -4,9 +4,9 @@ pragma solidity ^0.8.0;
 import "./IERC1155Oceana.sol";
 import "hardhat/console.sol";
 
-import "./IERC1155ReceiverOceana.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
+import "./IERC1155ReceiverOceana.sol";
 import "./ERC165Oceana.sol";
 import "./extensions/IERC1155MetadataURIOceana.sol";
 import "./IERC1155Oceana.sol";
@@ -45,7 +45,7 @@ contract ERC1155Oceana is
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId)
+    function supportsInterfaceOceana(bytes4 interfaceId)
         public
         view
         virtual
@@ -54,7 +54,7 @@ contract ERC1155Oceana is
     {
         return
             interfaceId == type(IERC1155Oceana).interfaceId ||
-            super.supportsInterface(interfaceId);
+            super.supportsInterfaceOceana(interfaceId);
     }
 
     /**
@@ -313,7 +313,7 @@ contract ERC1155Oceana is
      * - If `to` refers to a smart contract, it must implement {IERC1155Receiver-onERC1155Received} and return the
      * acceptance magic value.
      */
-    function _mint(
+    function _mintOceana(
         address to,
         uint256 id,
         uint256 amount,
@@ -351,7 +351,7 @@ contract ERC1155Oceana is
      * - If `to` refers to a smart contract, it must implement {IERC1155Receiver-onERC1155BatchReceived} and return the
      * acceptance magic value.
      */
-    function _mintBatch(
+    function _mintBatchOceana(
         address to,
         uint256[] memory ids,
         uint256[] memory amounts,
