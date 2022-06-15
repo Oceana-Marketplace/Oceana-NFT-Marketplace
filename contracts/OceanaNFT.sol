@@ -30,16 +30,8 @@ contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
     string private _favURI;
     string private _collectionURI;
 
-    // Mapping from tokenID to creator
-    mapping(uint256 => address) private creators;
-
-    modifier onlyCreator(uint256 tokenId) {
-        require(
-            msg.sender == creators[tokenId],
-            "msg sender is not the creator of NFT"
-        );
-        _;
-    }
+    // Mapping from collection ID to creator
+    mapping(uint256 => address) private collectionCreators;
 
     constructor(string memory _uri) ERC1155Oceana(_uri) {}
 
@@ -73,7 +65,7 @@ contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
         require(collectionId < collectionNumber, "Collection ID doesn't exist");
         require(amount >= 1, "Can not mint zero amount");
         require(
-            msg.sender == creators[collectionId] ||
+            msg.sender == collectionCreators[collectionId] ||
                 fav2originalMarketCollectionId[
                     collection2favId[collectionId]
                 ] ==
@@ -82,7 +74,6 @@ contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
         );
         _mintOceana(to, tokenNumber, amount, data);
         token2collectionId[tokenNumber] = collectionId;
-        creators[tokenNumber] = msg.sender;
         _setTokenRoyalty(tokenNumber, msg.sender, royalty);
         tokenNumber++;
     }
