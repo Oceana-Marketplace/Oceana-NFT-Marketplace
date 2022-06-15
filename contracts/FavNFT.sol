@@ -3,8 +3,9 @@ pragma solidity ^0.8.0;
 
 import "./ERC1155Oceana.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/common/ERC2981.sol";
 
-contract FavNFT is ERC1155Oceana, Ownable {
+contract FavNFT is ERC1155Oceana, Ownable, ERC2981 {
     using Address for address;
 
     // Mapping from token ID to Collection ID
@@ -28,6 +29,7 @@ contract FavNFT is ERC1155Oceana, Ownable {
 
     // Mapping from tokenID to creator
     mapping(uint256 => address) private creators;
+    mapping(uint256 => uint256) private royalty;
 
     modifier onlyCreator(uint256 tokenId) {
         require(msg.sender == creators[tokenId], "only creator can set uri");
@@ -59,6 +61,7 @@ contract FavNFT is ERC1155Oceana, Ownable {
         address to,
         uint256 collectionId,
         uint256 amount,
+        uint256 royalty,
         bytes memory data
     ) external {
         require(collectionId < collectionNumber, "Collection ID doesn't exist");
@@ -66,6 +69,7 @@ contract FavNFT is ERC1155Oceana, Ownable {
         _mintOceana(to, tokenNumber, amount, data);
         _collection[tokenNumber] = collectionId;
         creators[tokenNumber] = msg.sender;
+        _setTokenRoyalty( tokenNumber, msg.sender, royalty);
         tokenNumber++;
     }
 }
