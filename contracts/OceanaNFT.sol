@@ -78,7 +78,7 @@ contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
                     collection2favId[collectionId]
                 ] ==
                 collectionId,
-            "Collection is not created the user or this is not an original Market Collection of any Favourite"
+            "Collection is not created by the user or this is not an original Market Collection of any Favourite"
         );
         _mintOceana(to, tokenNumber, amount, data);
         token2collectionId[tokenNumber] = collectionId;
