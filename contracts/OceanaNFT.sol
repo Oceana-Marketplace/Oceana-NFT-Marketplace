@@ -3,24 +3,22 @@ pragma solidity ^0.8.0;
 
 import "./ERC1155Oceana.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/common/ERC2981.sol";
 
-contract OceanaNFT is ERC1155Oceana, Ownable {
+contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
     using Address for address;
 
     // Mapping from token ID to Collection ID
-    mapping(uint256 => uint256) private token2collectionID;
+    mapping(uint256 => uint256) private token2collectionId;
 
-    // Mapping from fav ID to original Market Collection ID
-    mapping(uint256 => uint256) private fav2originalMarketCollectionID;
+    // Mapping from fav ID to its original Market Collection ID
+    mapping(uint256 => uint256) private fav2originalMarketCollectionId;
 
     // Mapping from collection ID to favourite ID
-    mapping(uint256 => uint256) private collection2favID;
+    mapping(uint256 => uint256) private collection2favId;
 
     // The number of favourites in Oceana Marketplace
     uint256 private favNumber;
-
-    // Mapping from Collection ID to creator (this exists for collections created by users, not for original fav collection)
-    mapping(uint256 => address) private collectionCreator;
 
     // The number of collections in Oceana Marketplace
     uint256 private collectionNumber;
@@ -32,10 +30,13 @@ contract OceanaNFT is ERC1155Oceana, Ownable {
     string private _favURI;
     string private _collectionURI;
 
+    // Mapping from tokenID to creator
+    mapping(uint256 => address) private creators;
+
     modifier onlyCreator(uint256 tokenId) {
         require(
-            msg.sender == collectionCreator[token2collectionID[tokenId]],
-            "only creator can set uri"
+            msg.sender == creators[tokenId],
+            "msg sender is not the creator of NFT"
         );
         _;
     }
@@ -43,18 +44,14 @@ contract OceanaNFT is ERC1155Oceana, Ownable {
     constructor(string memory _uri) ERC1155Oceana(_uri) {}
 
     function createFav() external onlyOwner {
-        collection2favID[collectionNumber] = favNumber;
-        fav2originalMarketCollectionID[favNumber] = collectionNumber;
-        /* This is for future usage
-        fav2originalMarketCollectionID[favNumber] = collectionNumber;
-        */
+        collection2favId[collectionNumber] = favNumber;
+        fav2originalMarketCollectionId[favNumber] = collectionNumber;
         favNumber++;
         collectionNumber++;
     }
 
     function createCollection(uint256 favId) external {
-        collectionCreator[collectionNumber] = msg.sender;
-        collection2favID[collectionNumber] = favId;
+        collection2favId[collectionNumber] = favId;
         collectionNumber++;
     }
 
@@ -68,20 +65,25 @@ contract OceanaNFT is ERC1155Oceana, Ownable {
 
     function createNft(
         address to,
-        uint256 collectionID,
+        uint256 collectionId,
         uint256 amount,
+        uint96 royalty,
         bytes memory data
     ) external {
-        require(collectionID < collectionNumber, "Collection ID doesn't exist");
+        require(collectionId < collectionNumber, "Collection ID doesn't exist");
         require(amount >= 1, "Can not mint zero amount");
         require(
-            msg.sender == collectionCreator[collectionID] ||
-                collectionID ==
-                fav2originalMarketCollectionID[collection2favID[collectionID]],
-            "Creator of Collection ID doesn't match with caller or Collection ID is not original market collection ID of any favourite"
+            msg.sender == creators[collectionId] ||
+                fav2originalMarketCollectionId[
+                    collection2favId[collectionId]
+                ] ==
+                collectionId,
+            "Collection is not created the user or this is not an original Market Collection of any Favourite"
         );
         _mintOceana(to, tokenNumber, amount, data);
-        token2collectionID[tokenNumber] = collectionID;
+        token2collectionId[tokenNumber] = collectionId;
+        creators[tokenNumber] = msg.sender;
+        _setTokenRoyalty(tokenNumber, msg.sender, royalty);
         tokenNumber++;
     }
 }
