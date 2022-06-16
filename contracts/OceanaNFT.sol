@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./ERC1155Oceana.sol";
+import "./IOceanaNFT.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
 
-contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
+contract OceanaNFT is IOceanaNFT, Ownable, ERC2981 {
     using Address for address;
 
     // Mapping from token ID to Collection ID
@@ -33,20 +33,9 @@ contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
     // Mapping from collection ID to creator
     mapping(uint256 => address) private collectionCreators;
 
-    // Events
-    event CreateFAV(address indexed creator, uint256 indexed favId, uint256 indexed defaultCollectionId);
-    event CreateCollection(address indexed creator, uint256 indexed favId, uint256 indexed CollectionId);
-    event SetFavouriteURI( string indexed newURI);
-    event SetCollectionURI( string indexed newURI);
-    event CreateNFT(
-        address indexed to,
-        uint256 indexed collectionId,
-        uint256 indexed tokenNumber,
-        uint256 amount,
-        uint256 royalty
-    );
-
-    constructor(string memory _uri) ERC1155Oceana(_uri) {}
+    constructor(string memory _uri) ERC1155Oceana(_uri) {
+        emit ContractDeployed( msg.sender, _uri);
+    }
 
     function createFav() external onlyOwner {
         collection2favId[collectionNumber] = favNumber;
@@ -97,4 +86,5 @@ contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
         tokenNumber++;
         emit CreateNFT( to, collectionId, tokenNumber - 1, amount, royalty );
     }
+
 }
