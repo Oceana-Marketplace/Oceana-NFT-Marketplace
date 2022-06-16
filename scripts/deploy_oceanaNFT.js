@@ -15,14 +15,14 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
-  const FavNFT = await hre.ethers.getContractFactory("FavNFT");
-  const favNFT = await FavNFT.deploy(
+  const OceanaNFT = await hre.ethers.getContractFactory("OceanaNFT");
+  const oceanaNFT = await OceanaNFT.deploy(
     "https://gateway.pinata.cloud/ipfs/QmX4rKcZvguHrC3c3wLfwdfUaU3Aux2QdUnB4d2NC4R9MH"
   );
 
-  await favNFT.deployed();
+  await oceanaNFT.deployed();
 
-  console.log("favNFT address:", favNFT.address);
+  console.log("oceanaNFT address:", oceanaNFT.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

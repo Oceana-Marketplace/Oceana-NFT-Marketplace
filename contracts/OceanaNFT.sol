@@ -33,6 +33,19 @@ contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
     // Mapping from collection ID to creator
     mapping(uint256 => address) private collectionCreators;
 
+    // Events
+    event CreateFAV(address indexed creator, uint256 indexed favId, uint256 indexed defaultCollectionId);
+    event CreateCollection(address indexed creator, uint256 indexed favId, uint256 indexed CollectionId);
+    event SetFavouriteURI( string indexed newURI);
+    event SetCollectionURI( string indexed newURI);
+    event CreateNFT(
+        address indexed to,
+        uint256 indexed collectionId,
+        uint256 indexed tokenNumber,
+        uint256 amount,
+        uint256 royalty
+    );
+
     constructor(string memory _uri) ERC1155Oceana(_uri) {}
 
     function createFav() external onlyOwner {
@@ -40,19 +53,25 @@ contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
         fav2originalMarketCollectionId[favNumber] = collectionNumber;
         favNumber++;
         collectionNumber++;
+        emit CreateFAV( msg.sender, favNumber - 1, collectionNumber - 1);
     }
 
     function createCollection(uint256 favId) external {
+        require( favId < favNumber, "Fav does not exist");
+        collectionCreators[collectionNumber] = msg.sender;
         collection2favId[collectionNumber] = favId;
         collectionNumber++;
+        emit CreateCollection( msg.sender, favId, collectionNumber - 1);
     }
 
     function setFavouriteURI(string memory newURI) external onlyOwner {
         _favURI = newURI;
+        emit SetFavouriteURI( newURI );
     }
 
     function setCollectionURI(string memory newURI) external onlyOwner {
         _collectionURI = newURI;
+        emit SetCollectionURI( newURI );
     }
 
     function createNft(
@@ -74,7 +93,8 @@ contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
         );
         _mintOceana(to, tokenNumber, amount, data);
         token2collectionId[tokenNumber] = collectionId;
-        _setTokenRoyalty(tokenNumber, msg.sender, royalty);
+        _setTokenRoyalty(tokenNumber, to, royalty);
         tokenNumber++;
+        emit CreateNFT( to, collectionId, tokenNumber - 1, amount, royalty );
     }
 }
