@@ -1,12 +1,56 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./IOceanaNFT.sol";
+import "./ERC1155Oceana.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
+import "./IOceanaNFT.sol";
 
-contract OceanaNFT is IOceanaNFT, Ownable, ERC2981 {
-    using Address for address;
+contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
+
+    /**
+ * @dev Emitted when smart contract deployed
+     */
+    event ContractDeployed(address indexed owner, string indexed _tokenUri);
+
+    /**
+     * @dev Emitted when new Fav created
+     */
+    event CreateFAV(
+        address indexed creator,
+        uint256 indexed favId,
+        uint256 indexed defaultCollectionId
+    );
+
+    /**
+     * @dev Emitted when new Collection created
+     */
+    event CreateCollection(
+        address indexed creator,
+        uint256 indexed favId,
+        uint256 indexed CollectionId
+    );
+
+    /**
+     * @dev Emitted when new FAV uri seted
+     */
+    event SetFavouriteURI(string indexed newURI);
+
+    /**
+     * @dev Emitted when new Collection uri seted
+     */
+    event SetCollectionURI(string indexed newURI);
+
+    /**
+     * @dev Emitted new NFT created.
+     */
+    event CreateNFT(
+        address indexed to,
+        uint256 indexed collectionId,
+        uint256 indexed tokenNumber,
+        uint256 amount,
+        uint256 royalty
+    );
 
     // Mapping from token ID to Collection ID
     mapping(uint256 => uint256) private token2collectionId;
