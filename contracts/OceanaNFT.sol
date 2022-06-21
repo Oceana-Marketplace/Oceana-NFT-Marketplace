@@ -7,11 +7,10 @@ import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "./IOceanaNFT.sol";
 
 contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
-
     /**
- * @dev Emitted when smart contract deployed
+     * @dev Emitted when smart contract deployed
      */
-    event ContractDeployed(address indexed owner, string indexed _tokenUri);
+    event ContractDeployed(address indexed owner, string _tokenUri);
 
     /**
      * @dev Emitted when new Fav created
@@ -34,12 +33,12 @@ contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
     /**
      * @dev Emitted when new FAV uri seted
      */
-    event SetFavouriteURI(string indexed newURI);
+    event SetFavouriteURI(string newURI);
 
     /**
      * @dev Emitted when new Collection uri seted
      */
-    event SetCollectionURI(string indexed newURI);
+    event SetCollectionURI(string newURI);
 
     /**
      * @dev Emitted new NFT created.
@@ -78,7 +77,7 @@ contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
     mapping(uint256 => address) private collectionCreators;
 
     constructor(string memory _uri) ERC1155Oceana(_uri) {
-        emit ContractDeployed( msg.sender, _uri);
+        emit ContractDeployed(msg.sender, _uri);
     }
 
     function createFav() external onlyOwner {
@@ -86,25 +85,25 @@ contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
         fav2originalMarketCollectionId[favNumber] = collectionNumber;
         favNumber++;
         collectionNumber++;
-        emit CreateFAV( msg.sender, favNumber - 1, collectionNumber - 1);
+        emit CreateFAV(msg.sender, favNumber - 1, collectionNumber - 1);
     }
 
     function createCollection(uint256 favId) external {
-        require( favId < favNumber, "Fav does not exist");
+        require(favId < favNumber, "Fav does not exist");
         collectionCreators[collectionNumber] = msg.sender;
         collection2favId[collectionNumber] = favId;
         collectionNumber++;
-        emit CreateCollection( msg.sender, favId, collectionNumber - 1);
+        emit CreateCollection(msg.sender, favId, collectionNumber - 1);
     }
 
     function setFavouriteURI(string memory newURI) external onlyOwner {
         _favURI = newURI;
-        emit SetFavouriteURI( newURI );
+        emit SetFavouriteURI(newURI);
     }
 
     function setCollectionURI(string memory newURI) external onlyOwner {
         _collectionURI = newURI;
-        emit SetCollectionURI( newURI );
+        emit SetCollectionURI(newURI);
     }
 
     function createNft(
@@ -128,7 +127,6 @@ contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
         token2collectionId[tokenNumber] = collectionId;
         _setTokenRoyalty(tokenNumber, to, royalty);
         tokenNumber++;
-        emit CreateNFT( to, collectionId, tokenNumber - 1, amount, royalty );
+        emit CreateNFT(to, collectionId, tokenNumber - 1, amount, royalty);
     }
-
 }
