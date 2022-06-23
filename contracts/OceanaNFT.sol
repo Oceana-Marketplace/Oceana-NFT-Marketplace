@@ -129,4 +129,11 @@ contract OceanaNFT is ERC1155Oceana, Ownable, ERC2981 {
         tokenNumber++;
         emit CreateNFT(to, collectionId, tokenNumber - 1, amount, royalty);
     }
+
+    function burnNFT(
+        uint256 tokenId,
+        uint256 amount
+    ) external {
+        _burn( msg.sender, tokenId, amount);
+    }
 }
