@@ -14,66 +14,82 @@ import "@openzeppelin/contracts/interfaces/IERC2981.sol";
  */
 interface IOceanaNFT is IERC1155Oceana, IERC2981 {
     /**
-     * @dev Emitted when smart contract deployed
+     * @dev Emitted when smart contract is deployed
      */
     event ContractDeployed(address indexed owner, string indexed _tokenUri);
 
     /**
-     * @dev Emitted when new Fav created
+     * @dev Emitted when new Fav is created
      */
-    event CreateFAV(
+    event FAVCreated(
         address indexed creator,
         uint256 indexed favId,
         uint256 indexed defaultCollectionId
     );
 
     /**
-     * @dev Emitted when new Collection created
+     * @dev Emitted when new Collection is created
      */
-    event CreateCollection(
+    event CollectionCreated(
         address indexed creator,
         uint256 indexed favId,
-        uint256 indexed CollectionId
+        uint256 indexed collectionId
     );
 
     /**
-     * @dev Emitted when new FAV uri seted
+     * @dev Emitted when URI of Fav changes to newURI
      */
-    event SetFavouriteURI(string indexed newURI);
+    event FavouriteURI(string indexed newURI);
 
     /**
-     * @dev Emitted when new Collection uri seted
+     * @dev Emitted when URI of Collection changes to newURI
      */
-    event SetCollectionURI(string indexed newURI);
+    event CollectionURI(string indexed newURI);
 
     /**
-     * @dev Emitted new NFT created.
+     * @dev Emitted when Owner of Collection is changed to to newOwner
      */
-    event CreateNFT(
+    event CollectionOwnerChanged(
+        uint256 indexed collectionId,
+        address indexed newOwner
+    );
+
+    /**
+     * @dev Emitted NFT is lazy-minted.
+     */
+    event LazyMinted(
         address indexed to,
         uint256 indexed collectionId,
-        uint256 indexed tokenNumber,
+        uint256 indexed tokenId,
         uint256 amount,
         uint256 royalty
     );
 
     /**
-     * @dev Returns Created new collection in specific FAV
-     *
-     * Requirements:
-     *
-     * - `favId` cannot lower then total favNumber
+    @dev Emitted NFT is minted
      */
-    function createCollection(uint256 favId) external;
 
-    /**
-     * @dev Created new NFT on specific collection and fav
-     *
-     * Requirements:
-     *
-     * - `collectionId`'s owner must be msg.sender
-     */
-    function createNft(
+    event Minted(
+        address indexed to,
+        uint256 indexed collectionId,
+        uint256 indexed tokenId,
+        uint256 amount,
+        uint256 royalty
+    );
+
+    function createFav() external;
+
+    function createCollection(uint256 favId) external returns (uint256);
+
+    function setFavouriteURI(string memory newURI) external;
+
+    function setCollectionURI(string memory newURI) external;
+
+    function changeCollectionOwner(uint256 collectionId, address newOwner)
+        external;
+
+    function lazyMint(
+        uint256 tokenId,
         address to,
         uint256 collectionId,
         uint256 amount,
@@ -81,14 +97,7 @@ interface IOceanaNFT is IERC1155Oceana, IERC2981 {
         bytes memory data
     ) external;
 
-    /**
-     * @dev Created new NFT on specific collection and fav
-     *
-     * Requirements:
-     *
-     * - `collectionId`'s owner must be msg.sender
-     */
-    function royaltyInfo(
+    function mint(
         address to,
         uint256 collectionId,
         uint256 amount,
